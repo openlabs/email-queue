@@ -92,6 +92,7 @@ setup(
     name='%s_%s' % (PREFIX, MODULE),
     version=info.get('version', '0.0.1'),
     description="Trytond Email Queue Module",
+    long_description=open('README.rst').read(),
     author="Openlabs Technologies and Consulting (P) Ltd.",
     author_email='info@openlabs.co.in',
     url='http://www.openlabs.co.in/',
