@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<tryton>
+    <data>
+        <record model="res.user" id="email_sender">
+            <field name="login">email_sender</field>
+            <field name="name">Email Sender</field>
+            <field name="signature"></field>
+            <field name="active" eval="False"/>
+        </record>
+        <record model="ir.cron" id="send_mail_cron">
+            <field name="name">Send Mail Cron</field>
+            <field name="request_user" ref="res.user_admin"/>
+            <field name="user" ref="email_sender"/>
+            <field name="active" eval="True"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">minutes</field>
+            <field name="number_calls">-1</field>
+            <field name="repeat_missed" eval="False"/>
+            <field name="model">email.queue</field>
+            <field name="function">send_all</field>
+        </record>
+    </data>
+</tryton>

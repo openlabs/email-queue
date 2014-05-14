@@ -1,0 +1,6 @@
+flake8
+psycopg2
+mock
+fake-factory
+pretend
+.
