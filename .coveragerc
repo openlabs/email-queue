@@ -1,0 +1,5 @@
+[run]
+source = trytond.modules.email_queue
+
+[report]
+omit = */tests/*, */setup.py

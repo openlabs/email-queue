@@ -16,6 +16,7 @@ if os.path.isdir(DIR):
 import unittest
 import threading
 import Queue
+from functools import wraps
 
 from mock import patch
 from pretend import stub
@@ -25,6 +26,21 @@ from trytond.tests.test_tryton import POOL, USER, DB_NAME, CONTEXT
 from trytond.transaction import Transaction
 from trytond import backend
 import trytond.tests.test_tryton
+
+
+def clear_email_queue(function):
+    @wraps(function)
+    def wrapper(*args, **kwargs):
+        EmailQueue = POOL.get('email.queue')
+        with Transaction().start(DB_NAME, USER, CONTEXT) as transaction:
+            EmailQueue.delete(EmailQueue.search([]))
+            transaction.cursor.commit()
+        return function(*args, **kwargs)
+    return wrapper
+
+
+class BadSMTPServerException(Exception):
+    pass
 
 
 class TestEmailQueue(unittest.TestCase):
@@ -68,6 +84,64 @@ class TestEmailQueue(unittest.TestCase):
                 EmailQueue.search([('state', '=', 'sent')], count=True), 10
             )
 
+    @patch("smtplib.SMTP")
+    @clear_email_queue
+    def test_0015_max_attempts(self, mock_smtp):
+        """
+        After five attempts email state changes to failed.
+        """
+        EmailQueue = POOL.get('email.queue')
+
+        # Mock sendmail to raise exception
+        mock_smtp.return_value.sendmail.side_effect = BadSMTPServerException()
+
+        with Transaction().start(DB_NAME, USER, CONTEXT) as transaction:
+            # Put some emails in queue
+            f = Faker()
+            for item in xrange(10):
+                EmailQueue.queue_mail(f.email(), f.email(), f.text())
+
+            transaction.cursor.commit()
+
+            self.assertEqual(
+                EmailQueue.search([('state', '=', 'outbox')], count=True), 10
+            )
+
+        # Try sending the emails. The first 3 attempts will result in
+        # failures and the email should then be in failed state.
+        for i in xrange(3):
+            with Transaction().start(DB_NAME, USER, CONTEXT) as transaction:
+                # Run cron method to send mails
+                with self.assertRaises(BadSMTPServerException):
+                    EmailQueue.send_all()
+
+        with Transaction().start(DB_NAME, USER, CONTEXT) as transaction:
+            self.assertEqual(
+                EmailQueue.search([('state', '=', 'failed')], count=True), 1
+            )
+            self.assertEqual(
+                EmailQueue.search([('state', '=', 'outbox')], count=True), 9
+            )
+
+        # Lets make the smtp server work again ;) now the remaining emails
+        # should be sent well while the failed one remains failed
+        mock_smtp.return_value.sendmail.side_effect = None
+
+        with Transaction().start(DB_NAME, USER, CONTEXT) as transaction:
+            EmailQueue.send_all()
+
+        with Transaction().start(DB_NAME, USER, CONTEXT) as transaction:
+            self.assertEqual(
+                EmailQueue.search([('state', '=', 'failed')], count=True), 1
+            )
+            self.assertEqual(
+                EmailQueue.search([('state', '=', 'outbox')], count=True), 0
+            )
+            self.assertEqual(
+                EmailQueue.search([('state', '=', 'sent')], count=True), 9
+            )
+
+    @clear_email_queue
     def test_9999_transaction_safety(self):
         """
         Test the transaction safety of email sender.

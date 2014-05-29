@@ -7,6 +7,9 @@ buffer for tryton modules to send emails.
 .. image:: https://travis-ci.org/openlabs/email-queue.svg?branch=develop
     :target: https://travis-ci.org/openlabs/email-queue
 
+.. image:: https://coveralls.io/repos/openlabs/email-queue/badge.png
+    :target: https://coveralls.io/r/openlabs/email-queue
+
 
 Source code: https://github.com/openlabs/email-queue
 

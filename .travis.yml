@@ -4,8 +4,10 @@ python:
 install:
   - pip install -r dev_requirements.txt
 script:
-  - python setup.py test_on_postgres
+  - coverage run setup.py test_on_postgres
   - flake8 .
+after_success:
+  coveralls
 notifications:
   email:
   - ci-notify@openlabs.co.in
