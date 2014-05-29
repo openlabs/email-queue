@@ -3,4 +3,5 @@ psycopg2
 mock
 fake-factory
 pretend
+coveralls
 .

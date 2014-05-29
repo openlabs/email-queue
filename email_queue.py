@@ -23,15 +23,21 @@ class EmailQueue(ModelSQL):
     from_addr = fields.Char("From Address", required=True)
     to_addrs = fields.Char("To Addresses", required=True)
     msg = fields.Text("Message", required=True)
+    attempts = fields.Integer("Attempts", required=True)
     state = fields.Selection([
         ("outbox", "Outbox"),
         ("sending", "Sending"),
         ("sent", "Sent"),
+        ("failed", "Failed"),
     ], "State", required=True)
 
     @staticmethod
     def default_state():
         return "outbox"
+
+    @staticmethod
+    def default_attempts():
+        return 0
 
     @classmethod
     def queue_mail(cls, from_addr, to_addrs, msg):
@@ -64,6 +70,8 @@ class EmailQueue(ModelSQL):
         """
         assert self.state == 'outbox', 'Only mails in outbox can be sent'
 
+        values = {'attempts': self.attempts + 1}
+
         with Transaction().new_cursor() as txn:
             try:
                 self.write([self], {'state': 'sending'})
@@ -72,9 +80,21 @@ class EmailQueue(ModelSQL):
                 )
             except Exception:
                 txn.cursor.rollback()
+
+                # Record the attempts and check if the mail has to be
+                # marked for permanent failure
+                with Transaction().new_cursor() as txn:
+                    if values['attempts'] >= 3:
+                        values['state'] = 'failed'
+                    self.write([self], values)
+                    txn.cursor.commit()
+
+                # Finally raise the exception again
                 raise
+
             else:
-                self.write([self], {'state': 'sent'})
+                values['state'] = 'sent'
+                self.write([self], values)
                 txn.cursor.commit()
 
     @classmethod
