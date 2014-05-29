@@ -1,0 +1,7 @@
+3.0.1.2
+-------
+
+* Added attempts field to the email and if sending fails three times
+  then the email is marked as failed. This is required for other emails
+  to be sent. Before the patch, emails would wait forever as the first
+  failure would prevent subsequent emails from being sent.
