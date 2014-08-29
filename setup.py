@@ -12,6 +12,36 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
+class SQLiteTest(Command):
+    """
+    Run the tests on SQLite
+    """
+    description = "Run tests on SQLite"
+
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        if self.distribution.tests_require:
+            self.distribution.fetch_build_eggs(self.distribution.tests_require)
+
+        from trytond.config import CONFIG
+        CONFIG['db_type'] = 'sqlite'
+        os.environ['DB_NAME'] = ':memory:'
+
+        from tests import suite
+        test_result = unittest.TextTestRunner(verbosity=3).run(suite())
+
+        if test_result.wasSuccessful():
+            sys.exit(0)
+        sys.exit(-1)
+
+
 class PostgresTest(Command):
     """
     Run the tests on Postgres.
@@ -27,28 +57,16 @@ class PostgresTest(Command):
         pass
 
     def run(self):
-        # Set timezone in environment.
-        os.environ['TZ'] = 'UTC'
+        if self.distribution.tests_require:
+            self.distribution.fetch_build_eggs(self.distribution.tests_require)
 
-        def set_config():
-            from trytond.config import CONFIG
-            CONFIG['db_type'] = 'postgresql'
-            CONFIG['db_host'] = 'localhost'
-            CONFIG['db_port'] = 5432
-            CONFIG['db_user'] = 'postgres'
+        from trytond.config import CONFIG
+        CONFIG['db_type'] = 'postgresql'
+        CONFIG['db_host'] = 'localhost'
+        CONFIG['db_port'] = 5432
+        CONFIG['db_user'] = 'postgres'
 
-        from trytond.backend.postgresql import Database
-        import trytond.tests.test_tryton
-
-        # Needed for the database loader to load correctly
-        set_config()
-
-        trytond.tests.test_tryton.DB_NAME = 'test_' + str(int(time.time()))
-        from trytond.tests.test_tryton import DB_NAME
-        trytond.tests.test_tryton.DB = Database(DB_NAME)
-        from trytond.pool import Pool
-        Pool.test = True
-        trytond.tests.test_tryton.POOL = Pool(DB_NAME)
+        os.environ['DB_NAME'] = 'test_' + str(int(time.time()))
 
         from tests import suite
         test_result = unittest.TextTestRunner(verbosity=3).run(suite())
@@ -127,5 +145,8 @@ setup(
     """ % (MODULE, MODULE),
     test_suite='tests',
     test_loader='trytond.test_loader:Loader',
-    cmdclass={'test_on_postgres': PostgresTest}
+    cmdclass={
+        'test': SQLiteTest,
+        'test_on_postgres': PostgresTest,
+    }
 )
