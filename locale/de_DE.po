@@ -1,0 +1,75 @@
+# 
+msgid ""
+msgstr "Content-Type: text/plain; charset=utf-8\n"
+
+msgctxt "field:email.queue,attempts:"
+msgid "Attempts"
+msgstr "Versuche"
+
+msgctxt "field:email.queue,create_date:"
+msgid "Create Date"
+msgstr "Erstellungsdatum"
+
+msgctxt "field:email.queue,create_uid:"
+msgid "Create User"
+msgstr "Erstellt durch"
+
+msgctxt "field:email.queue,from_addr:"
+msgid "From Address"
+msgstr "Absenderadresse (From)"
+
+msgctxt "field:email.queue,id:"
+msgid "ID"
+msgstr "ID"
+
+msgctxt "field:email.queue,msg:"
+msgid "Message"
+msgstr "Nachricht"
+
+msgctxt "field:email.queue,rec_name:"
+msgid "Name"
+msgstr "Name"
+
+msgctxt "field:email.queue,state:"
+msgid "State"
+msgstr "Status"
+
+msgctxt "field:email.queue,to_addrs:"
+msgid "To Addresses"
+msgstr "Empfängeradressen (To)"
+
+msgctxt "field:email.queue,write_date:"
+msgid "Write Date"
+msgstr "Zuletzt geändert"
+
+msgctxt "field:email.queue,write_uid:"
+msgid "Write User"
+msgstr "Letzte Änderung durch"
+
+msgctxt "model:email.queue,name:"
+msgid "Email Queue"
+msgstr "E-Mail Warteschlange"
+
+msgctxt "model:ir.cron,name:send_mail_cron"
+msgid "Send Mail Cron"
+msgstr "Zeitplaner Mailversand"
+
+msgctxt "model:res.user,name:email_sender"
+msgid "Email Sender"
+msgstr "E-Mail Absender"
+
+msgctxt "selection:email.queue,state:"
+msgid "Failed"
+msgstr "Fehlgeschlagen"
+
+msgctxt "selection:email.queue,state:"
+msgid "Outbox"
+msgstr "Postausgang"
+
+msgctxt "selection:email.queue,state:"
+msgid "Sending"
+msgstr "Versandbereit"
+
+msgctxt "selection:email.queue,state:"
+msgid "Sent"
+msgstr "Gesendet"
