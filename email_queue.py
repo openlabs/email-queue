@@ -7,29 +7,29 @@
 """
 from email.message import Message
 
-from trytond.model import ModelSQL, fields
+from trytond.model import ModelSQL, ModelView, fields
 from trytond.tools import get_smtp_server
 from trytond.transaction import Transaction
 
 __all__ = ['EmailQueue']
 
 
-class EmailQueue(ModelSQL):
+class EmailQueue(ModelSQL, ModelView):
     """
     Email Queue
     """
     __name__ = "email.queue"
 
-    from_addr = fields.Char("From Address", required=True)
-    to_addrs = fields.Char("To Addresses", required=True)
-    msg = fields.Text("Message", required=True)
-    attempts = fields.Integer("Attempts", required=True)
+    from_addr = fields.Char("From Address", required=True, readonly=True)
+    to_addrs = fields.Char("To Addresses", required=True, readonly=True)
+    msg = fields.Text("Message", required=True, readonly=True)
+    attempts = fields.Integer("Attempts", required=True, readonly=True)
     state = fields.Selection([
         ("outbox", "Outbox"),
         ("sending", "Sending"),
         ("sent", "Sent"),
         ("failed", "Failed"),
-    ], "State", required=True)
+    ], "State", required=True, readonly=True)
 
     @staticmethod
     def default_state():
