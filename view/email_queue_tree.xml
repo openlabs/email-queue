@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<tree string="Email Queue">
+    <field name="from_addr"/>
+    <field name="to_addrs"/>
+    <field name="attempts"/>
+    <field name="state"/>
+</tree>
