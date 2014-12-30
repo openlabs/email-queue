@@ -141,6 +141,9 @@ class TestEmailQueue(unittest.TestCase):
                 EmailQueue.search([('state', '=', 'sent')], count=True), 9
             )
 
+    @unittest.skipIf(
+        backend.name() == 'sqlite', "Skip txn safety test on SQlite"
+    )
     @clear_email_queue
     def test_9999_transaction_safety(self):
         """
@@ -176,7 +179,7 @@ class TestEmailQueue(unittest.TestCase):
             So create the new transaction here, refresh the active record
             objects and call sendmail like the cron would have
             """
-            with Transaction().start(DB_NAME, USER, CONTEXT):
+            with Transaction().start(DB_NAME, USER, context=CONTEXT):
                 # email active record is from old transaction, so referesh it.
                 email = EmailQueue(email.id)
 
